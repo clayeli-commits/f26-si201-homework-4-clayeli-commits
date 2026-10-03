@@ -1,0 +1,12 @@
+schema: "classroom50/repo-config/v1"
+classroom: "f26-si201"
+assignment: "homework-4"
+owner:
+  username: "clayeli-commits"
+  id: 324157197
+  accepted_at: "2026-10-03T01:35:30Z"
+source:
+  owner: "SI201-UMich"
+  owner_id: 43884568
+  repo: "f26-homework-4"
+  branch: "main"
