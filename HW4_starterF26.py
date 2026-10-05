@@ -1,7 +1,7 @@
 # SI 201 HW4 (Library Checkout System)
-# Your name:
-# Your student id:
-# Your email:
+# Your name: Elijah Caybrook
+# Your student id: 24041260
+# Your email: caybrook@umich.edu
 # Who or what you worked with on this homework (including generative AI like ChatGPT):
 # If you worked with generative AI also add a statement for how you used it.
 # e.g.:
@@ -142,11 +142,33 @@ class Library:
 
         # TODO: Implement checkout logic following the instructions
         # ==============================
-        # YOUR CODE STARTS HERE
-        # ==============================
-        pass
-        # ==============================
-        # YOUR CODE ENDS HERE
+        
+        patron = next((p for p in self.patrons if p.patron_id == patron_id), None)
+        if patron is None:
+            self.transaction_log.append(("checkout", patron_id, book_id, "not_found"))
+            return False
+
+        book = next((b for b in self.books if b.book_id == book_id), None)
+        if book is None:
+            self.transaction_log.append(("checkout", patron_id, book_id, "not_found"))
+            return False
+
+        if book.is_checked_out:
+            self.transaction_log.append(("checkout", patron_id, book_id, "unavailable"))
+            return False
+
+        # Check patron checkout limit
+        if len(patron.checked_out_books) >= 4:
+            self.transaction_log.append(("checkout", patron_id, book_id, "at_limit"))
+            return False
+
+        # Perform checkout operations
+        patron.checked_out_books.append(book)
+        book.checkout_history.append(patron)
+        book.is_checked_out = True
+        self.transaction_log.append(("checkout", patron_id, book_id, "success"))
+        return True
+        
         # ==============================
 
     def return_book(self, patron_id, book_id):
@@ -161,11 +183,26 @@ class Library:
 
         # TODO: Implement return logic following the instructions
         # ==============================
-        # YOUR CODE STARTS HERE
-        # ==============================
-        pass
-        # ==============================
-        # YOUR CODE ENDS HERE
+        
+        patron = next((p for p in self.patrons if p.patron_id == patron_id), None)
+        if patron is None:
+            self.transaction_log.append(("return", patron_id, book_id, "not_found"))
+            return False
+
+        book = next((b for b in self.books if b.book_id == book_id), None)
+        if book is None:
+            self.transaction_log.append(("return", patron_id, book_id, "not_found"))
+            return False
+
+        if book not in patron.checked_out_books:
+            self.transaction_log.append(("return", patron_id, book_id, "not_checked_out"))
+            return False
+
+        patron.checked_out_books.remove(book)
+        book.is_checked_out = False
+        self.transaction_log.append(("return", patron_id, book_id, "success"))
+        return True
+
         # ==============================
 
     def count_successful_checkouts(self):
@@ -179,11 +216,13 @@ class Library:
         '''
         # TODO: Implement count_successful_checkouts() following the instructions
         # ==============================
-        # YOUR CODE STARTS HERE
-        # ==============================
-        pass
-        # ==============================
-        # YOUR CODE ENDS HERE
+
+        counts = {}
+        for action, patron_id, book_id, status in self.transaction_log:
+            if action == "checkout" and status == "success":
+                counts[patron_id] = counts.get(patron_id, 0) + 1
+        return counts
+
         # ==============================
 
     # Extra Credit
